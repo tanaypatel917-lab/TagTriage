@@ -13,7 +13,7 @@ export type WriteResult =
 
 export interface WriteOptions {
   actor: string;
-  profile?: (deviceId: string, at: string) => ProfileRecord;
+  profile?: (deviceId: string, at: string, actor: string) => ProfileRecord;
   now?: Date;
 }
 
@@ -38,7 +38,7 @@ export async function writeEvents(db: TagTriageDB, drafts: EventDraft[], options
       if (!result.ok) return { ok: false, code: result.code, message: result.message };
       await db.events.bulkAdd(result.events);
       await db.meta.put({ key: "seq", value: firstSeq + result.events.length });
-      if (options.profile) await db.profiles.put(options.profile(deviceId, now));
+      if (options.profile) await db.profiles.put(options.profile(deviceId, now, options.actor));
       return { ok: true, events: result.events };
     });
   } catch (error) {

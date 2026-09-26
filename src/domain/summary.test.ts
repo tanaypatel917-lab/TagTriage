@@ -21,7 +21,7 @@ const manual: CriticalFacts = {
 describe("mergeFacts", () => {
   it("unions lists and never sets DNR from the record", () => {
     const merged = mergeFacts(manual, localExtract(SAMPLE_RECORD));
-    expect(merged.allergies).toEqual(["penicillin", "latex", "Penicillin (hives)", "Sulfa"]);
+    expect(merged.allergies).toEqual(["Penicillin (hives)", "latex", "Sulfa"]);
     expect(merged.dnr).toBe(false);
     expect(merged.recordSuggestsDnr).toBe(true);
     expect(merged.anticoagulants).toBe(true);
@@ -40,7 +40,7 @@ describe("buildSummary", () => {
     const summary = buildSummary({ ...manual, dnr: true }, localExtract(SAMPLE_RECORD), { id: "local" }, now);
     expect(summary.alerts.map((a) => a.kind)).toEqual(["code-status", "anticoagulant", "allergy", "condition-high", "condition", "medication", "blood-type", "contact"]);
     expect(summary.alerts.map((a) => a.rank)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
-    expect(summary.headline).toBe("Margaret Chen · ~79y · DNR · BLOOD THINNERS · Allergies: penicillin, latex, Penicillin (hives), Sulfa");
+    expect(summary.headline).toBe("Margaret Chen · ~79y · DNR · BLOOD THINNERS · Allergies: Penicillin (hives), latex, Sulfa");
     expect(summary.pendingConfirmations).toEqual([]);
   });
 
