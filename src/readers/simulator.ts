@@ -28,11 +28,15 @@ export class SimulatorReader implements TagReader {
     return true;
   }
 
-  async startScan(onRead: (read: TagRead) => void): Promise<() => void> {
+  subscribe(onRead: (read: TagRead) => void): () => void {
     this.listeners.add(onRead);
     return () => {
       this.listeners.delete(onRead);
     };
+  }
+
+  async startScan(onRead: (read: TagRead) => void): Promise<() => void> {
+    return this.subscribe(onRead);
   }
 
   tap(tagId: string): TagRead {
