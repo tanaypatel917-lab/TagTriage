@@ -44,6 +44,8 @@ NVIDIA_NIM_VISION_MODEL=meta/llama-3.2-90b-vision-instruct
 
 The key is only read server-side by `/api/rewrite`; the browser never sees it. Without a key the app falls back to a deterministic local extractor (photos then need to be pasted as text).
 
+By default, `/api/rewrite` allows 30 requests per client per hour and 500 requests globally per day. Set `REWRITE_RATE_LIMIT_PER_HOUR` or `REWRITE_GLOBAL_LIMIT_PER_DAY` to override these limits. The Origin check blocks other websites, but not a script that forges the header; the limits are the real guard against unexpected NIM spend.
+
 ## Deploying later
 
-The `/api/rewrite` route needs a server runtime, so static hosting (GitHub Pages) is not enough. On Vercel, import the repo and set `NVIDIA_NIM_API_KEY` in the project environment. Note that a public deployment lets anyone spend your NIM credits through `/api/rewrite`.
+The `/api/rewrite` route needs a server runtime, so static hosting (GitHub Pages) is not enough. On Vercel, import the repo and set `NVIDIA_NIM_API_KEY` in the project environment. The default rewrite limits are 30 requests per client per hour and 500 globally per day, configurable with `REWRITE_RATE_LIMIT_PER_HOUR` and `REWRITE_GLOBAL_LIMIT_PER_DAY`. They are in-memory per server instance; on multi-instance or serverless hosting, each instance counts separately. The Origin check blocks other websites but can be forged by a script, so the limits are the real cost guard.

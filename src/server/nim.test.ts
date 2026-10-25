@@ -10,12 +10,12 @@ function reply(content: string | null, status = 200) {
 }
 
 function body(value: unknown) {
-  return { rawBody: JSON.stringify(value) };
+  return { rawBody: JSON.stringify(value), origin: "http://localhost:3000", host: "localhost:3000" };
 }
 
 describe("handleRewrite validation", () => {
   it("rejects bad JSON, empty input and wrong types", async () => {
-    expect((await handleRewrite({ rawBody: "{" }, env)).status).toBe(400);
+    expect((await handleRewrite({ ...body({}), rawBody: "{" }, env)).status).toBe(400);
     expect((await handleRewrite(body({}), env)).status).toBe(400);
     expect((await handleRewrite(body({ documentText: 42 }), env)).status).toBe(400);
   });
@@ -26,9 +26,31 @@ describe("handleRewrite validation", () => {
     expect((await handleRewrite(body({ documentText: "x".repeat(20_001) }), env)).status).toBe(413);
   });
 
-  it("rejects cross-origin requests", async () => {
-    const result = await handleRewrite({ ...body({ documentText: "hi" }), origin: "https://evil.example", host: "localhost:3000" }, env);
+  it("rejects requests with no origin before calling upstream", async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    const result = await handleRewrite({ rawBody: JSON.stringify({ documentText: "hi" }), host: "localhost:3000" }, env, fetchImpl);
+
     expect(result.status).toBe(403);
+    expect(result.body).toMatchObject({ error: "forbidden_origin", message: "Requests must come from the TagTriage app" });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("rejects requests with no host before calling upstream", async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    const result = await handleRewrite({ rawBody: JSON.stringify({ documentText: "hi" }), origin: "http://localhost:3000" }, env, fetchImpl);
+
+    expect(result.status).toBe(403);
+    expect(result.body).toMatchObject({ error: "forbidden_origin", message: "Requests must come from the TagTriage app" });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("rejects mismatched origins before calling upstream", async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    const result = await handleRewrite({ ...body({ documentText: "hi" }), origin: "https://evil.example" }, env, fetchImpl);
+
+    expect(result.status).toBe(403);
+    expect(result.body).toMatchObject({ error: "forbidden_origin", message: "Cross-origin requests are not allowed" });
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it("returns 503 without a key and never calls upstream", async () => {

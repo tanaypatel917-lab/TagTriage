@@ -42,6 +42,7 @@ export type RewriteErrorCode =
   | "payload_too_large"
   | "unsupported_image"
   | "forbidden_origin"
+  | "rate_limited"
   | "nim_unconfigured"
   | "nim_upstream_error"
   | "nim_bad_output"
@@ -147,15 +148,16 @@ export async function handleRewrite(
   fetchImpl: typeof fetch = fetch,
   timeoutMs = TIMEOUT_MS
 ): Promise<HandlerResult> {
-  if (input.origin && input.host) {
-    let originHost: string | undefined;
-    try {
-      originHost = new URL(input.origin).host;
-    } catch {
-      originHost = undefined;
-    }
-    if (originHost !== input.host) return fail(403, "forbidden_origin", "Cross-origin requests are not allowed");
+  if (!input.origin || !input.host) {
+    return fail(403, "forbidden_origin", "Requests must come from the TagTriage app");
   }
+  let originHost: string | undefined;
+  try {
+    originHost = new URL(input.origin).host;
+  } catch {
+    originHost = undefined;
+  }
+  if (originHost !== input.host) return fail(403, "forbidden_origin", "Cross-origin requests are not allowed");
   if (new TextEncoder().encode(input.rawBody).length > MAX_BODY_BYTES) return fail(413, "payload_too_large", "Request body is too large");
   const parsed = parseBody(input.rawBody);
   if ("status" in parsed) return parsed;
