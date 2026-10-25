@@ -5,8 +5,9 @@
 - `npm run lint`
 - `npx vitest run`
 - `npm run build`
+- `npm run build && npx playwright test` (install Chromium first with `npx playwright install chromium`)
 
-CI (`.github/workflows/ci.yml`) runs the same four steps on Node 24 for every PR and on pushes to `main`.
+CI (`.github/workflows/ci.yml`) runs these checks on Node 24 for every PR and on pushes to `main`.
 Local default Node is 26; if a Node-specific failure appears, retry with `PATH=/opt/homebrew/opt/node@24/bin:$PATH`.
 
 ## Conventions
