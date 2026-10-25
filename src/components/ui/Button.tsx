@@ -21,7 +21,7 @@ export function Button({ variant = "ghost", size = "md", icon, busy, className, 
       aria-busy={busy || undefined}
       {...rest}
     >
-      {busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" /> : icon && <Icon name={icon} />}
+      {busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-fg/40 border-t-current" aria-hidden="true" /> : icon && <Icon name={icon} />}
       {children}
     </button>
   );

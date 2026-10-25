@@ -6,13 +6,13 @@ export function ByteMeter({ bytes, capacity }: { bytes: number; capacity: number
   return (
     <div>
       <div className="flex items-baseline justify-between text-sm">
-        <span className="font-semibold text-white/80">Tag memory</span>
-        <span className="font-mono tabular-nums text-white">
+        <span className="font-semibold text-fg/80">Tag memory</span>
+        <span className="font-mono tabular-nums text-fg">
           {bytes} / {capacity} bytes
         </span>
       </div>
       <div
-        className="mt-2 h-2.5 overflow-hidden rounded-full bg-white/10"
+        className="mt-2 h-2.5 overflow-hidden rounded-full bg-fg/10"
         role="meter"
         aria-label="Tag memory used"
         aria-valuemin={0}
@@ -21,7 +21,7 @@ export function ByteMeter({ bytes, capacity }: { bytes: number; capacity: number
       >
         <div className={cx("h-full rounded-full transition-[width] duration-300 ease-out-expo", tone)} style={{ width: `${ratio * 100}%` }} />
       </div>
-      <p className="mt-1.5 text-xs text-white/55">NTAG215 user memory, including the sticker ID record and NDEF framing.</p>
+      <p className="mt-1.5 text-xs text-fg/55">NTAG215 user memory, including the sticker ID record and NDEF framing.</p>
     </div>
   );
 }

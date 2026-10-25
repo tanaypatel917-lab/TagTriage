@@ -26,15 +26,15 @@ function StickerButton({ item, onTap }: { item: StickerItem; onTap: (tagId: stri
       <button
         type="button"
         onClick={() => onTap(item.tag.tagId)}
-        className="row-surface flex min-h-[52px] w-full items-center gap-3 px-3 text-left transition-colors hover:border-white/20 hover:bg-white/[0.07] active:scale-[0.99]"
+        className="row-surface flex min-h-[52px] w-full items-center gap-3 px-3 text-left transition-colors hover:border-ink hover:bg-hivis/25 active:scale-[0.99]"
         aria-label={`Tap sticker ${item.tag.tagId}: ${item.label}${item.hint ? ` (${item.hint})` : ""}`}
       >
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/[0.07] text-white/80">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[8px] border-[1.5px] border-ink bg-paper-card text-fg">
           <Icon name="nfc" className="h-4 w-4" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-semibold text-white">{item.label}</span>
-          <span className="block font-mono text-xs text-white/50">{item.tag.tagId}</span>
+          <span className="block truncate font-semibold text-fg">{item.label}</span>
+          <span className="block font-mono text-xs text-fg/50">{item.tag.tagId}</span>
         </span>
         {item.hint && <Chip tone={item.tone}>{item.hint}</Chip>}
       </button>
@@ -99,7 +99,7 @@ export function ReaderPanel({ onRead, onScanError }: { onRead: (read: TagRead) =
 
   return (
     <Card title="Tap a sticker" description={kind === "simulator" ? "Simulator reader: pick a sticker to tap. No NFC hardware needed." : "Hold the sticker against the back of the phone."}>
-      <div role="radiogroup" aria-label="Reader" className="mb-4 inline-flex rounded-full bg-white/10 p-1 ring-1 ring-inset ring-white/10">
+      <div role="radiogroup" aria-label="Reader" className="segmented mb-4">
         {(
           [
             { id: "simulator", label: "Simulator", enabled: true },
@@ -115,7 +115,7 @@ export function ReaderPanel({ onRead, onScanError }: { onRead: (read: TagRead) =
             disabled={!option.enabled}
             onClick={() => setKind(option.id)}
             title={option.id === "bridge" ? "Bridge interface available; no reader connected" : option.enabled ? undefined : "Web NFC needs Android Chrome over HTTPS"}
-            className={cx("nav-pill disabled:cursor-not-allowed disabled:opacity-40", kind === option.id && "bg-white text-ink")}
+            className="nav-pill disabled:cursor-not-allowed disabled:opacity-40"
           >
             {option.label}
           </button>
@@ -128,7 +128,7 @@ export function ReaderPanel({ onRead, onScanError }: { onRead: (read: TagRead) =
         </button>
       ) : ready && tags.length === 0 ? (
         <div className="space-y-3">
-          <p className="text-white/70">No stickers yet.</p>
+          <p className="text-fg/70">No stickers yet.</p>
           <DemoStickersButton />
         </div>
       ) : (
@@ -140,7 +140,7 @@ export function ReaderPanel({ onRead, onScanError }: { onRead: (read: TagRead) =
             .filter((group) => group.items.length > 0)
             .map((group) => (
               <div key={group.title}>
-                <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-white/55">{group.title}</h3>
+                <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-fg/55">{group.title}</h3>
                 <ul className="space-y-2">
                   {group.items.map((item) => (
                     <StickerButton key={item.tag.tagId} item={item} onTap={(id) => simulator.tap(id)} />
@@ -152,7 +152,7 @@ export function ReaderPanel({ onRead, onScanError }: { onRead: (read: TagRead) =
             .filter((group) => group.items.length > 0)
             .map((group) => (
               <div key={group.unit}>
-                <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-white/55">{group.unit}</h3>
+                <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-fg/55">{group.unit}</h3>
                 <ul className="space-y-2">
                   {group.items.map((item) => (
                     <StickerButton key={item.tag.tagId} item={item} onTap={(id) => simulator.tap(id)} />
@@ -162,7 +162,7 @@ export function ReaderPanel({ onRead, onScanError }: { onRead: (read: TagRead) =
             ))}
           {done.length > 0 && (
             <div>
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-white/55">Recently used</h3>
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-fg/55">Recently used</h3>
               <ul className="space-y-2">
                 {done.map((item) => (
                   <StickerButton key={item.tag.tagId} item={item} onTap={(id) => simulator.tap(id)} />

@@ -55,7 +55,7 @@ export function ChipInput({
               <button
                 type="button"
                 onClick={() => onChange(values.filter((v) => v !== value))}
-                className="grid h-8 w-8 place-items-center rounded-full hover:bg-white/10"
+                className="grid h-8 w-8 place-items-center rounded-full hover:bg-fg/10"
                 aria-label={`Remove ${value}`}
                 disabled={disabled}
               >

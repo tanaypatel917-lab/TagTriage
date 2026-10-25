@@ -19,6 +19,7 @@ import { Chip } from "../ui/Chip";
 import { SelectField, TextField } from "../ui/Field";
 import { useAppState } from "../providers/AppDataProvider";
 import { useOperator } from "../providers/OperatorProvider";
+import { PageIntro } from "../ui/PageIntro";
 
 const PAGE = 200;
 const CONFLICT_LABELS: Record<Conflict["kind"], string> = {
@@ -35,9 +36,9 @@ function ConflictList({ conflicts }: { conflicts: Conflict[] }) {
     <ul className="space-y-2">
       {conflicts.map((conflict) => (
         <li key={conflict.id} className="rounded-xl bg-amber-500/10 px-4 py-3 ring-1 ring-inset ring-amber-400/20">
-          <p className="font-semibold text-amber-100">{CONFLICT_LABELS[conflict.kind]}</p>
-          <p className="text-sm text-white/75">{conflict.message}</p>
-          <p className="mt-1 font-mono text-xs text-white/50">
+          <p className="font-semibold text-amber-900">{CONFLICT_LABELS[conflict.kind]}</p>
+          <p className="text-sm text-fg/75">{conflict.message}</p>
+          <p className="mt-1 font-mono text-xs text-fg/50">
             {formatDateTime(conflict.at)} · {conflict.actor} · device {shortDevice(conflict.deviceId)} · {conflict.stream}
           </p>
         </li>
@@ -122,25 +123,22 @@ export function AuditView() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="page-title">Audit · Sync</h1>
-        <p className="mt-3 max-w-2xl text-white/70">The append-only event log is the source of truth. Export it, merge another device&apos;s export, or hand an encounter to a hospital as FHIR.</p>
-      </div>
+      <PageIntro index="05" kicker="Audit · Sync" title={<>Every write, <span className="mark">on record</span>.</>} lede={<>The append-only event log is the source of truth. Export it, merge another device&apos;s export, or hand an encounter to a hospital as FHIR.</>} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card title="This device" stagger={0}>
           <dl className="space-y-2 text-sm">
             <div>
-              <dt className="text-white/55">Device ID</dt>
-              <dd className="break-all font-mono text-white/90">{deviceId ?? "…"}</dd>
+              <dt className="text-fg/55">Device ID</dt>
+              <dd className="break-all font-mono text-fg/90">{deviceId ?? "…"}</dd>
             </div>
             <div>
-              <dt className="text-white/55">Operator</dt>
-              <dd className="text-white/90">{actor}</dd>
+              <dt className="text-fg/55">Operator</dt>
+              <dd className="text-fg/90">{actor}</dd>
             </div>
             <div>
-              <dt className="text-white/55">Stored</dt>
-              <dd className="text-white/90">
+              <dt className="text-fg/55">Stored</dt>
+              <dd className="text-fg/90">
                 {plural(events.length, "event")} · {plural(Object.keys(profiles).length, "profile")}
               </dd>
             </div>
@@ -157,7 +155,7 @@ export function AuditView() {
           </Button>
           {preview && (
             <div className="mt-4 space-y-3 text-sm">
-              <p className="text-white/80">
+              <p className="text-fg/80">
                 From device <span className="font-mono">{shortDevice(preview.sourceDeviceId)}</span>: {plural(preview.newEvents.length, "new event")}, {preview.duplicates} already here,{" "}
                 {plural(preview.profilesToApply.length, "profile")} to apply.
               </p>
@@ -173,7 +171,7 @@ export function AuditView() {
               )}
               {preview.newConflicts.length > 0 && (
                 <div>
-                  <p className="mb-2 font-semibold text-amber-200">This merge will surface {plural(preview.newConflicts.length, "conflict")}:</p>
+                  <p className="mb-2 font-semibold text-amber-800">This merge will surface {plural(preview.newConflicts.length, "conflict")}:</p>
                   <ConflictList conflicts={preview.newConflicts} />
                 </div>
               )}
@@ -205,7 +203,7 @@ export function AuditView() {
       </div>
 
       <Card title={`Conflicts (${state.conflicts.length})`} description="Surfaced by the projection, never silently resolved.">
-        {state.conflicts.length ? <ConflictList conflicts={state.conflicts} /> : <p className="text-white/60">No conflicts. Duplicate same-encounter claims merged: {state.duplicateClaims}.</p>}
+        {state.conflicts.length ? <ConflictList conflicts={state.conflicts} /> : <p className="text-fg/60">No conflicts. Duplicate same-encounter claims merged: {state.duplicateClaims}.</p>}
       </Card>
 
       <Card title="Event log" description="Actor, device and time on every write. Newest first.">
@@ -218,17 +216,17 @@ export function AuditView() {
           </SelectField>
           <TextField label="Search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sticker ID, actor, stream…" />
         </div>
-        <ol className="divide-y divide-white/[0.07]">
+        <ol className="divide-y divide-fg/[0.07]">
           {log.slice(0, limit).map((event) => (
             <li key={event.id} className="grid gap-1 py-3 sm:grid-cols-[10rem_1fr_auto] sm:gap-4">
-              <p className="font-mono text-xs tabular-nums text-white/55">{formatDateTime(event.at)}</p>
+              <p className="font-mono text-xs tabular-nums text-fg/55">{formatDateTime(event.at)}</p>
               <div className="min-w-0">
-                <p className="text-sm text-white/90">{describeEvent(event)}</p>
-                <p className="truncate font-mono text-xs text-white/45">
+                <p className="text-sm text-fg/90">{describeEvent(event)}</p>
+                <p className="truncate font-mono text-xs text-fg/45">
                   {event.type} · {event.stream}
                 </p>
               </div>
-              <p className={cx("text-xs text-white/60 sm:text-right")}>
+              <p className={cx("text-xs text-fg/60 sm:text-right")}>
                 {event.actor}
                 <br />
                 <Chip className="mt-1">device {shortDevice(event.deviceId)}</Chip>
@@ -236,7 +234,7 @@ export function AuditView() {
             </li>
           ))}
         </ol>
-        {log.length === 0 && <p className="text-white/60">No events match.</p>}
+        {log.length === 0 && <p className="text-fg/60">No events match.</p>}
         {log.length > limit && (
           <Button className="mt-4" onClick={() => setLimit(limit + PAGE)}>
             Show {Math.min(PAGE, log.length - limit)} more

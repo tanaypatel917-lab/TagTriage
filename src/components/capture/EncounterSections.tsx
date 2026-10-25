@@ -61,9 +61,9 @@ export function TriageSection({ encounter, locked }: SectionProps) {
               <label
                 key={category}
                 className={cx(
-                  "relative flex min-h-[76px] cursor-pointer flex-col justify-center rounded-2xl px-4 py-3 transition-transform duration-150 active:scale-[0.98] has-[:disabled]:cursor-not-allowed has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-white",
+                  "relative flex min-h-[76px] border-[1.5px] cursor-pointer flex-col justify-center rounded-card px-4 py-3 transition-transform duration-150 active:scale-[0.98] has-[:disabled]:cursor-not-allowed has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink",
                   TRIAGE_STYLES[category].tile,
-                  selected ? "ring-4 ring-white shadow-lg" : "opacity-70 hover:opacity-100"
+                  selected ? "shadow-[5px_5px_0_#0f1a2a] ring-[3px] ring-hivis ring-offset-0" : "opacity-60 hover:opacity-100"
                 )}
               >
                 <input
@@ -81,7 +81,7 @@ export function TriageSection({ encounter, locked }: SectionProps) {
           })}
         </div>
       </fieldset>
-      <div className="mt-3 border-t border-white/10 pt-2">
+      <div className="mt-3 border-t border-fg/10 pt-2">
         <Toggle
           label="Ambulatory"
           description="Patient can walk"
@@ -129,7 +129,7 @@ export function VitalsSection({ encounter, locked }: SectionProps) {
             />
           ))}
         </fieldset>
-        {touched && check.errors.form && <p className="mt-2 text-sm font-medium text-red-300">{check.errors.form}</p>}
+        {touched && check.errors.form && <p className="mt-2 text-sm font-medium text-red-800">{check.errors.form}</p>}
         <Button type="submit" variant="secondary" icon="activity" className="mt-4" disabled={locked} busy={busy}>
           Record vitals
         </Button>
@@ -139,7 +139,7 @@ export function VitalsSection({ encounter, locked }: SectionProps) {
         <div className="mt-5 overflow-x-auto">
           <table className="w-full min-w-[32rem] text-left text-sm tabular-nums">
             <caption className="sr-only">Vitals series, newest first</caption>
-            <thead className="text-xs uppercase tracking-wider text-white/50">
+            <thead className="text-xs uppercase tracking-wider text-fg/50">
               <tr>
                 <th className="py-2 pr-3 font-semibold">Time</th>
                 {["HR", "BP", "RR", "SpO₂", "GCS", "Temp", "BGL", "Pain"].map((h) => (
@@ -153,13 +153,13 @@ export function VitalsSection({ encounter, locked }: SectionProps) {
               {series.map((entry) => {
                 const warnings = validateVitals(entry.vitals).warnings;
                 const cell = (key: VitalKey) => (
-                  <td className={cx("px-2 py-2", warnings[key] ? "font-bold text-amber-300" : "text-white/90")}>{entry.vitals[key] ?? "–"}</td>
+                  <td className={cx("px-2 py-2", warnings[key] ? "font-bold text-amber-800" : "text-fg/90")}>{entry.vitals[key] ?? "–"}</td>
                 );
                 return (
-                  <tr key={entry.eventId} className="border-t border-white/10">
-                    <td className="py-2 pr-3 text-white/60">{formatShortTime(entry.takenAt)}</td>
+                  <tr key={entry.eventId} className="border-t border-fg/10">
+                    <td className="py-2 pr-3 text-fg/60">{formatShortTime(entry.takenAt)}</td>
                     {cell("hr")}
-                    <td className={cx("px-2 py-2", warnings.sbp || warnings.dbp ? "font-bold text-amber-300" : "text-white/90")}>
+                    <td className={cx("px-2 py-2", warnings.sbp || warnings.dbp ? "font-bold text-amber-800" : "text-fg/90")}>
                       {entry.vitals.sbp !== undefined || entry.vitals.dbp !== undefined ? `${entry.vitals.sbp ?? "?"}/${entry.vitals.dbp ?? "?"}` : "–"}
                     </td>
                     {cell("rr")}
@@ -217,10 +217,10 @@ export function HistorySection({ encounter, locked, hints }: SectionProps & { hi
         <dl className="mt-4 space-y-2">
           {entries.map((f) => (
             <div key={f} className="row-surface px-4 py-2.5">
-              <dt className="text-xs font-bold uppercase tracking-wider text-white/50">
+              <dt className="text-xs font-bold uppercase tracking-wider text-fg/50">
                 {HISTORY_LABELS[f]} · {formatShortTime(encounter.history[f]?.at ?? "")}
               </dt>
-              <dd className="text-white/90">{encounter.history[f]?.text}</dd>
+              <dd className="text-fg/90">{encounter.history[f]?.text}</dd>
             </div>
           ))}
         </dl>
@@ -244,13 +244,13 @@ export function InterventionsSection({ encounter, locked }: SectionProps) {
               disabled={locked || busy}
               onClick={() => run([{ type: "InterventionLogged", payload: { encounterId: encounter.encounterId, code: item.code } }], `${item.label} logged at ${formatTime(new Date().toISOString())}`)}
               className={cx(
-                "flex min-h-[56px] flex-col items-start justify-center rounded-2xl px-3 py-2 text-left text-sm font-semibold ring-1 ring-inset transition-transform duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50",
-                done.length ? "bg-sky-500/15 text-sky-100 ring-sky-400/30" : "bg-white/[0.05] text-white/90 ring-white/10 hover:bg-white/[0.09]"
+                "flex min-h-[56px] flex-col items-start justify-center rounded-card px-3 py-2 text-left text-sm font-semibold ring-1 ring-inset transition-transform duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50",
+                done.length ? "bg-sky-500/15 text-sky-900 ring-sky-400/30" : "bg-fg/[0.05] text-fg/90 ring-fg/10 hover:bg-fg/[0.09]"
               )}
             >
               <span>{item.label}</span>
               {last && (
-                <span className="text-xs font-medium text-sky-300">
+                <span className="text-xs font-medium text-sky-800">
                   ×{done.length} · {formatShortTime(last.at)}
                 </span>
               )}
@@ -288,7 +288,7 @@ export function TransportSection({ encounter, locked }: SectionProps) {
           Mark {next}
         </Button>
       )}
-      {next === "handed-off" && !locked && <p className="mt-4 text-sm text-white/65">Record the hand-off with a custody transfer below.</p>}
+      {next === "handed-off" && !locked && <p className="mt-4 text-sm text-fg/65">Record the hand-off with a custody transfer below.</p>}
       <form onSubmit={submit} className="mt-5">
         <fieldset disabled={locked || busy} className="grid gap-3 sm:grid-cols-[1fr_12rem_10rem]">
           <TextField label="Destination" list="destinations" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="County General ED" />
@@ -319,8 +319,8 @@ export function MovementStepper({ movement, compact }: { movement: Movement; com
     <ol className={cx("flex items-center", compact ? "gap-1" : "gap-1.5")} aria-label={`Movement: ${movement}`}>
       {MOVEMENTS.map((state, i) => (
         <li key={state} className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className={cx("h-1.5 rounded-full", i <= index ? (i === index ? "bg-signal" : "bg-white/70") : "bg-white/15")} />
-          {!compact && <span className={cx("truncate text-[11px] font-semibold", i === index ? "text-white" : "text-white/45")}>{state}</span>}
+          <span className={cx("h-1.5 rounded-full", i <= index ? (i === index ? "bg-signal" : "bg-fg/70") : "bg-fg/15")} />
+          {!compact && <span className={cx("truncate text-[11px] font-semibold", i === index ? "text-fg" : "text-fg/45")}>{state}</span>}
         </li>
       ))}
     </ol>
@@ -354,7 +354,7 @@ export function CustodySection({ encounter, locked }: SectionProps) {
           <TextField label="Facility" list="destinations" value={facility} onChange={(e) => setFacility(e.target.value)} placeholder="County General ED" />
           <TextField label="Hand-off note" value={note} onChange={(e) => setNote(e.target.value)} className="sm:col-span-2" placeholder="Optional" />
         </fieldset>
-        <label className="mt-3 flex min-h-[44px] items-center gap-3 text-sm text-white/85">
+        <label className="mt-3 flex min-h-[44px] items-center gap-3 text-sm text-fg/85">
           <input type="checkbox" className="h-5 w-5" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} disabled={locked} />
           Report given and patient handed over
         </label>

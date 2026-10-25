@@ -19,16 +19,16 @@ function FieldShell({ id, label, hint, error, warning, className, children }: Fi
       </label>
       {children}
       {error ? (
-        <p id={`${id}-msg`} role="alert" className="mt-1.5 text-sm font-medium text-red-300">
+        <p id={`${id}-msg`} role="alert" className="mt-1.5 text-sm font-medium text-red-800">
           {error}
         </p>
       ) : warning ? (
-        <p id={`${id}-msg`} className="mt-1.5 text-sm font-medium text-amber-300">
+        <p id={`${id}-msg`} className="mt-1.5 text-sm font-medium text-amber-800">
           {warning}
         </p>
       ) : (
         hint && (
-          <p id={`${id}-msg`} className="mt-1.5 text-sm text-white/55">
+          <p id={`${id}-msg`} className="mt-1.5 text-sm text-fg/55">
             {hint}
           </p>
         )

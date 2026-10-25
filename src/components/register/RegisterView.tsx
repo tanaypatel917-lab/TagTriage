@@ -38,6 +38,7 @@ import { useAppState } from "../providers/AppDataProvider";
 import { useWriter } from "../providers/OperatorProvider";
 import { useReader } from "../providers/ReaderProvider";
 import { RewriterBadge, SummaryView } from "./SummaryView";
+import { PageIntro } from "../ui/PageIntro";
 
 const FIELD_LABELS: Record<FactField, string> = {
   name: "Name",
@@ -194,12 +195,7 @@ export function RegisterView() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="page-title">Register a sticker</h1>
-        <p className="mt-3 max-w-2xl text-white/70">
-          Set this up before an emergency. Only the facts you approve are written to the sticker, where anyone who taps it can read them. The full summary stays on this device.
-        </p>
-      </div>
+      <PageIntro index="02" kicker="Register" title={<>Prepare a <span className="mark">sticker</span> before the call.</>} lede={<>Set this up before an emergency. Only the facts you approve are written to the sticker, where anyone who taps it can read them. The full summary stays on this device.</>} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-6">
@@ -238,7 +234,7 @@ export function RegisterView() {
               />
               <div className="sm:col-span-2">
                 <ChipInput label="Allergies" tone="red" values={facts.allergies} onChange={(allergies) => update({ allergies, nkda: allergies.length ? false : facts.nkda })} placeholder="penicillin, latex" />
-                <label className="mt-2 inline-flex min-h-[44px] items-center gap-3 text-sm text-white/80">
+                <label className="mt-2 inline-flex min-h-[44px] items-center gap-3 text-sm text-fg/80">
                   <input type="checkbox" className="h-5 w-5" checked={facts.nkda} disabled={facts.allergies.length > 0} onChange={(e) => update({ nkda: e.target.checked })} />
                   No known allergies (NKDA)
                 </label>
@@ -247,7 +243,7 @@ export function RegisterView() {
                 <ChipInput label="Conditions" values={facts.conditions} onChange={(conditions) => update({ conditions })} placeholder="atrial fibrillation, diabetes" />
               </div>
             </div>
-            <div className="mt-4 divide-y divide-white/10 border-t border-white/10">
+            <div className="mt-4 divide-y divide-fg/10 border-t border-fg/10">
               <Toggle label="On blood thinners" description="Anticoagulant or antiplatelet medicine" checked={facts.anticoagulants} onChange={(anticoagulants) => update({ anticoagulants })} tone="thinner" />
               <Toggle label="DNR order" description="Do not resuscitate, confirmed by the owner" checked={facts.dnr} onChange={(dnr) => update({ dnr })} tone="dnr" />
               <Toggle label="POLST on file" description="Physician orders for life-sustaining treatment" checked={facts.polst} onChange={(polst) => update({ polst })} tone="dnr" />
@@ -281,8 +277,8 @@ export function RegisterView() {
                 {/* eslint-disable-next-line @next/next/no-img-element -- local data URL preview */}
                 <img src={image.dataUrl} alt="Uploaded record preview" className="h-16 w-16 rounded-lg object-cover" />
                 <div className="min-w-0 flex-1 text-sm">
-                  <p className="font-semibold text-white">Photo ready for the vision model</p>
-                  <p className="text-white/60">
+                  <p className="font-semibold text-fg">Photo ready for the vision model</p>
+                  <p className="text-fg/60">
                     {Math.round(image.bytes / 1024)} KB{image.recompressed ? ` (shrunk from ${Math.round(image.originalBytes / 1024)} KB)` : ""} · {image.width}×{image.height}
                   </p>
                 </div>
@@ -307,9 +303,9 @@ export function RegisterView() {
               <div className="mt-5 space-y-4">
                 <RewriterBadge summary={summary} />
                 {pendingDnr && (
-                  <div className="rounded-2xl bg-dnr/20 p-4 ring-1 ring-inset ring-dnr-ring/40" role="alert">
-                    <p className="font-display text-lg font-semibold text-white">The record suggests a DNR order. Confirm?</p>
-                    <p className="mt-1 text-sm text-white/75">A DNR flag on the sticker changes what responders do. It is only written if you confirm it matches signed paperwork.</p>
+                  <div className="rounded-card bg-dnr/20 p-4 ring-1 ring-inset ring-dnr-ring/40" role="alert">
+                    <p className="font-display text-lg font-semibold text-fg">The record suggests a DNR order. Confirm?</p>
+                    <p className="mt-1 text-sm text-fg/75">A DNR flag on the sticker changes what responders do. It is only written if you confirm it matches signed paperwork.</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Button variant="secondary" icon="check" onClick={() => update({ dnr: true })}>
                         Confirm DNR
@@ -326,7 +322,7 @@ export function RegisterView() {
           <Card id="write" title="4 · Write the sticker" stagger={3}>
             {ready && rolls.length === 0 ? (
               <div className="space-y-3">
-                <p className="text-white/70">No usable sticker rolls. Add one on the Inventory page, or load the demo stickers.</p>
+                <p className="text-fg/70">No usable sticker rolls. Add one on the Inventory page, or load the demo stickers.</p>
                 <DemoStickersButton />
               </div>
             ) : (
@@ -342,7 +338,7 @@ export function RegisterView() {
                   <div>
                     <p className="label">Next sticker</p>
                     <p className="row-surface flex min-h-[48px] items-center gap-2 px-4 font-mono">
-                      <Icon name="tag" className="h-4 w-4 text-white/60" />
+                      <Icon name="tag" className="h-4 w-4 text-fg/60" />
                       {tag ? `${tag.tagId} · ${tag.encoded ? "pre-encoded" : "blank"}` : "None available"}
                     </p>
                   </div>
@@ -355,7 +351,7 @@ export function RegisterView() {
                   <legend className="label">Include on the sticker</legend>
                   <div className="grid grid-cols-2 gap-x-4 sm:grid-cols-4">
                     {FACT_FIELDS.map((field) => (
-                      <label key={field} className="inline-flex min-h-[44px] items-center gap-2.5 text-sm text-white/85">
+                      <label key={field} className="inline-flex min-h-[44px] items-center gap-2.5 text-sm text-fg/85">
                         <input type="checkbox" className="h-5 w-5" checked={include[field]} onChange={(e) => setInclude({ ...include, [field]: e.target.checked })} />
                         {FIELD_LABELS[field]}
                       </label>
@@ -401,13 +397,13 @@ export function RegisterView() {
                   </Banner>
                 )}
 
-                <label className="flex min-h-[52px] items-start gap-3 rounded-2xl bg-white/[0.04] p-4 text-sm text-white/85 ring-1 ring-inset ring-white/10">
+                <label className="flex min-h-[52px] items-start gap-3 rounded-card bg-fg/[0.04] p-4 text-sm text-fg/85 ring-1 ring-inset ring-fg/10">
                   <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
                   <span>I approve writing these facts to the sticker. Anyone who taps it can read them.</span>
                 </label>
 
                 {kind === "simulator" && (
-                  <label className="inline-flex min-h-[44px] items-center gap-3 text-sm text-white/60">
+                  <label className="inline-flex min-h-[44px] items-center gap-3 text-sm text-fg/60">
                     <input type="checkbox" className="h-5 w-5" checked={failNext} onChange={(e) => setFailNext(e.target.checked)} />
                     Simulator: fail the next write (shows that no success banner appears)
                   </label>
@@ -417,8 +413,8 @@ export function RegisterView() {
                   <Button variant="primary" icon="nfc" onClick={writeSticker} disabled={!canWrite} busy={writing}>
                     {kind === "web-nfc" ? "Write sticker (hold it to the phone)" : "Write sticker"}
                   </Button>
-                  {!facts.name.trim() && <span className="text-sm text-white/55">Add a name first.</span>}
-                  {facts.name.trim() && !consent && <span className="text-sm text-white/55">Approve the facts above to write.</span>}
+                  {!facts.name.trim() && <span className="text-sm text-fg/55">Add a name first.</span>}
+                  {facts.name.trim() && !consent && <span className="text-sm text-fg/55">Approve the facts above to write.</span>}
                 </div>
 
                 {notice && (
@@ -439,12 +435,12 @@ export function RegisterView() {
         </div>
 
         <aside className="space-y-3 lg:sticky lg:top-28 lg:self-start" aria-label="Sticker preview">
-          <p className="text-sm font-semibold text-white/70">What EMTs will see when they tap it</p>
+          <p className="text-sm font-semibold text-fg/70">What EMTs will see when they tap it</p>
           {preview && <MedProfileCard facts={preview} tagId={tag?.tagId} preview />}
           <details className="row-surface px-4 py-3 text-sm">
-            <summary className="flex min-h-[32px] cursor-pointer items-center font-semibold text-white/75">Raw on-tag payload</summary>
-            <code className="mt-2 block break-all font-mono text-xs text-white/70">{idRecord}</code>
-            <code className="mt-1 block break-all font-mono text-xs text-white/70">{encoded.payload}</code>
+            <summary className="flex min-h-[32px] cursor-pointer items-center font-semibold text-fg/75">Raw on-tag payload</summary>
+            <code className="mt-2 block break-all font-mono text-xs text-fg/70">{idRecord}</code>
+            <code className="mt-1 block break-all font-mono text-xs text-fg/70">{encoded.payload}</code>
           </details>
         </aside>
       </div>

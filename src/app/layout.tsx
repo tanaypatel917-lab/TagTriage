@@ -1,23 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers/Providers";
+import { AppFooter } from "@/components/shell/AppFooter";
 import { AppHeader } from "@/components/shell/AppHeader";
 import { ServiceWorkerRegistrar } from "@/components/shell/ServiceWorkerRegistrar";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-grotesk", display: "swap" });
+const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display", display: "swap" });
+const body = Instrument_Sans({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: "TagTriage", template: "%s · TagTriage" },
   description: "Offline-first EMS app for NFC medical stickers. Demonstrator: no real patient data.",
   applicationName: "TagTriage",
-  appleWebApp: { capable: true, title: "TagTriage", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "TagTriage", statusBarStyle: "default" },
   other: { "mobile-web-app-capable": "yes" }
 };
 
 export const viewport: Viewport = {
-  themeColor: "#060b16",
+  themeColor: "#f3eee4",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover"
@@ -25,16 +27,19 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${grotesk.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body className="min-h-[100dvh] font-sans antialiased">
-        <div className="aurora-bg" aria-hidden="true" />
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
+        <div className="paper-bg" aria-hidden="true" />
         <ServiceWorkerRegistrar />
         <Providers>
           <AppHeader />
-          <main className="mx-auto max-w-6xl px-4 pb-16 pt-6 md:pt-10">{children}</main>
-          <footer className="mx-auto max-w-6xl px-4 pb-[max(2rem,env(safe-area-inset-bottom))] text-xs text-white/45">
-            Demonstrator · no real patient data · not for clinical use
-          </footer>
+          <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-20 pt-8 outline-none md:px-6 md:pt-12">
+            {children}
+          </main>
+          <AppFooter />
         </Providers>
       </body>
     </html>
