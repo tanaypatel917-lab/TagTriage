@@ -1,4 +1,5 @@
 import { extractFirstJsonObject, normalizeExtraction, type ExtractedFacts } from "@/domain/extraction";
+import type { RateLimitResult } from "./rateLimit";
 
 export const NIM_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 export const DEFAULT_TEXT_MODEL = "openai/gpt-oss-120b";
@@ -65,12 +66,14 @@ export type RewriteResponse = RewriteSuccess | RewriteFailure;
 export interface HandlerResult {
   status: number;
   body: RewriteResponse;
+  retryAfterSec?: number;
 }
 
 export interface RewriteInput {
   rawBody: string;
   origin?: string | null;
   host?: string | null;
+  consumeQuota?: () => RateLimitResult;
 }
 
 type ChatContent = string | ({ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } })[];
@@ -162,6 +165,14 @@ export async function handleRewrite(
   const parsed = parseBody(input.rawBody);
   if ("status" in parsed) return parsed;
   if (!env.apiKey) return fail(503, "nim_unconfigured", "NVIDIA NIM is not configured on this server");
+  const quota = input.consumeQuota?.();
+  if (quota && !quota.ok) {
+    return {
+      status: 429,
+      body: { error: "rate_limited", message: "Too many rewrite requests. Try again later." },
+      retryAfterSec: quota.retryAfterSec
+    };
+  }
 
   let transcript: string | undefined;
   if (parsed.documentImage) {

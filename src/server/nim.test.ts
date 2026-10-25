@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { SAMPLE_RECORD } from "@/domain/samples";
-import { EXTRACTION_PROMPT, NIM_URL, handleRewrite, type NimEnv } from "./nim";
+import { EXTRACTION_PROMPT, MAX_BODY_BYTES, NIM_URL, handleRewrite, type NimEnv } from "./nim";
 
 const env: NimEnv = { apiKey: "nvapi-test-secret", textModel: "openai/gpt-oss-120b", visionModel: "meta/llama-3.2-90b-vision-instruct" };
 const PNG = "data:image/png;base64,iVBORw0KGgo=";
@@ -28,10 +28,12 @@ describe("handleRewrite validation", () => {
 
   it("rejects requests with no origin before calling upstream", async () => {
     const fetchImpl = vi.fn<typeof fetch>();
-    const result = await handleRewrite({ rawBody: JSON.stringify({ documentText: "hi" }), host: "localhost:3000" }, env, fetchImpl);
+    const consumeQuota = vi.fn(() => ({ ok: true as const }));
+    const result = await handleRewrite({ rawBody: JSON.stringify({ documentText: "hi" }), host: "localhost:3000", consumeQuota }, env, fetchImpl);
 
     expect(result.status).toBe(403);
     expect(result.body).toMatchObject({ error: "forbidden_origin", message: "Requests must come from the TagTriage app" });
+    expect(consumeQuota).not.toHaveBeenCalled();
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
@@ -46,28 +48,63 @@ describe("handleRewrite validation", () => {
 
   it("rejects mismatched origins before calling upstream", async () => {
     const fetchImpl = vi.fn<typeof fetch>();
-    const result = await handleRewrite({ ...body({ documentText: "hi" }), origin: "https://evil.example" }, env, fetchImpl);
+    const consumeQuota = vi.fn(() => ({ ok: true as const }));
+    const result = await handleRewrite({ ...body({ documentText: "hi" }), origin: "https://evil.example", consumeQuota }, env, fetchImpl);
 
     expect(result.status).toBe(403);
     expect(result.body).toMatchObject({ error: "forbidden_origin", message: "Cross-origin requests are not allowed" });
+    expect(consumeQuota).not.toHaveBeenCalled();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("does not consume quota for oversized or invalid bodies", async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    const consumeQuota = vi.fn(() => ({ ok: true as const }));
+
+    const oversized = await handleRewrite({ ...body({ documentText: "x".repeat(MAX_BODY_BYTES) }), consumeQuota }, env, fetchImpl);
+    expect(oversized.status).toBe(413);
+    expect(consumeQuota).not.toHaveBeenCalled();
+
+    const invalid = await handleRewrite({ ...body({ documentText: 42 }), consumeQuota }, env, fetchImpl);
+    expect(invalid.status).toBe(400);
+    expect(consumeQuota).not.toHaveBeenCalled();
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it("returns 503 without a key and never calls upstream", async () => {
     const fetchImpl = vi.fn<typeof fetch>();
-    const result = await handleRewrite(body({ documentText: "hi" }), { ...env, apiKey: undefined }, fetchImpl);
+    const consumeQuota = vi.fn(() => ({ ok: true as const }));
+    const result = await handleRewrite({ ...body({ documentText: "hi" }), consumeQuota }, { ...env, apiKey: undefined }, fetchImpl);
     expect(result).toMatchObject({ status: 503, body: { error: "nim_unconfigured" } });
+    expect(consumeQuota).not.toHaveBeenCalled();
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 });
 
 describe("handleRewrite upstream flow", () => {
+  it("returns 429 with retry metadata when quota refuses", async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    const consumeQuota = vi.fn(() => ({ ok: false as const, retryAfterSec: 42 }));
+    const result = await handleRewrite({ ...body({ documentText: "hi" }), consumeQuota }, env, fetchImpl);
+
+    expect(result).toEqual({
+      status: 429,
+      body: { error: "rate_limited", message: "Too many rewrite requests. Try again later." },
+      retryAfterSec: 42
+    });
+    expect(consumeQuota).toHaveBeenCalledOnce();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("extracts from text with a strict prompt and low reasoning effort for gpt-oss", async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       reply('Sure.\n```json\n{"allergies":["Penicillin"],"medications":["Eliquis"],"conditions":["AFib"],"anticoagulants":true,"dnr":true}\n```')
     );
-    const result = await handleRewrite({ ...body({ documentText: SAMPLE_RECORD }), origin: "http://localhost:3000", host: "localhost:3000" }, env, fetchImpl);
+    const consumeQuota = vi.fn(() => ({ ok: true as const }));
+    const result = await handleRewrite({ ...body({ documentText: SAMPLE_RECORD }), consumeQuota }, env, fetchImpl);
     expect(result).toMatchObject({ status: 200, body: { model: env.textModel, extracted: { allergies: ["Penicillin"], anticoagulants: true, dnr: true } } });
+    expect(consumeQuota).toHaveBeenCalledOnce();
+    expect(fetchImpl).toHaveBeenCalledOnce();
     const [url, init] = fetchImpl.mock.calls[0];
     expect(url).toBe(NIM_URL);
     const sent = JSON.parse(String(init?.body));
