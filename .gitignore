@@ -6,3 +6,14 @@ out
 !.env.example
 .DS_Store
 .playwright-mcp/
+
+# Ruflo runtime data and machine-specific state
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/
+.claude-flow/metrics/
+.claude-flow/mods/install.json
+.claude-flow/memory-package.json
+.claude/settings.json.bak-*
+.swarm/*.db
+ruvector.db
