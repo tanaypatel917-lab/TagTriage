@@ -440,7 +440,7 @@
       background-color 140ms ease;
   }
 
-  .nav-pill:hover:not(:disabled) {
+  .nav-pill:hover:not(:disabled):not([aria-current="page"]):not([aria-checked="true"]) {
     color: var(--ink);
   }
 
