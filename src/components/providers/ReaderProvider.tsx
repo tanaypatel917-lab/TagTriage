@@ -31,6 +31,7 @@ export function ReaderProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const supported = webNfc.isSupported();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Read browser-only NFC capability after hydration.
     setWebNfcSupported(supported);
     if (supported && localStorage.getItem(KIND_KEY) === "web-nfc") setKindState("web-nfc");
   }, [webNfc]);

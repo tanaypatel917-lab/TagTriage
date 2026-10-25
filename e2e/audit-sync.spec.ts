@@ -8,7 +8,10 @@ interface ExportBundle {
 
 test("exports demo events and imports them on a new device", async ({ page, browser }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Load demo stickers" }).click();
+  const loadButton = page.getByRole("button", { name: "Load demo stickers" });
+  await loadButton.click();
+  await expect(loadButton).toBeHidden();
+  await expect(page.getByRole("button", { name: /Tap sticker .*Unused \(Pre-encoded\)/ }).first()).toBeVisible();
   await page.goto("/audit");
 
   const [download] = await Promise.all([

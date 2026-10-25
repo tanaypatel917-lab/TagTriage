@@ -16,7 +16,10 @@ const OperatorContext = createContext<OperatorContextValue>({ operator: DEFAULT_
 
 export function OperatorProvider({ children }: { children: ReactNode }) {
   const [operator, setOperatorState] = useState<Operator>(DEFAULT_OPERATOR);
-  useEffect(() => setOperatorState(loadOperator()), []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Load browser-only operator preferences after hydration.
+    setOperatorState(loadOperator());
+  }, []);
   const setOperator = useCallback((next: Operator) => {
     saveOperator(next);
     setOperatorState(next);

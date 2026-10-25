@@ -55,10 +55,13 @@ export function CaptureView() {
   const [starting, setStarting] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const stateRef = useRef(state);
-  stateRef.current = state;
   const headingRef = useRef<HTMLHeadingElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const handledParams = useRef(false);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   const handleRead = useCallback((next: TagRead) => {
     const current = stateRef.current;
@@ -91,6 +94,7 @@ export function CaptureView() {
     const encounterParam = params.get("encounter");
     const encounter = encounterParam ? state.encounters[encounterParam] : undefined;
     const tagId = tagParam ?? encounter?.tagId;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Apply the deep-link scan only after IndexedDB is ready.
     if (tagId) handleRead({ source: "simulator", at: new Date().toISOString(), records: textRecords(simulatedMemory(state, tagId)), simulatedTagId: tagId });
     if (encounter) setEncounterId(encounter.encounterId);
   }, [ready, params, state, handleRead]);

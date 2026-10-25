@@ -4,9 +4,15 @@ function stickerInRoll(page: Page, heading: string, buttonName: RegExp) {
   return page.getByRole("heading", { name: heading }).locator("..").getByRole("button", { name: buttonName }).first();
 }
 
+async function loadDemoStickers(page: Page) {
+  const button = page.getByRole("button", { name: "Load demo stickers" });
+  await button.click();
+  await expect(button).toBeHidden();
+}
+
 test("records, reloads, and closes an encounter on a Medic 12 sticker", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Load demo stickers" }).click();
+  await loadDemoStickers(page);
 
   const rollHeading = "Medic 12 · LOT-A24-117";
   const sticker = stickerInRoll(page, rollHeading, /Unused \(Pre-encoded\)/);
@@ -44,9 +50,10 @@ test("records, reloads, and closes an encounter on a Medic 12 sticker", async ({
 
 test("does not start an encounter from the recalled Medic 7 batch", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Load demo stickers" }).click();
+  await loadDemoStickers(page);
 
   const sticker = stickerInRoll(page, "Medic 7 · LOT-X23-900", /Unused \(Recalled\)/);
+  await expect(sticker).toBeVisible();
   await sticker.click();
 
   await expect(page.getByText("Recalled batch", { exact: true })).toBeVisible();
