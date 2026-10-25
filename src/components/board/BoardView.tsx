@@ -19,13 +19,14 @@ import { Chip, TriageChip } from "../ui/Chip";
 import { SelectField } from "../ui/Field";
 import { Icon } from "../ui/Icon";
 import { useAppState } from "../providers/AppDataProvider";
+import { PageIntro } from "../ui/PageIntro";
 
 const COUNTER_STYLE: Record<Triage | "none", string> = {
   RED: "triage-RED",
   YELLOW: "triage-YELLOW",
   GREEN: "triage-GREEN",
   BLACK: "triage-BLACK",
-  none: "bg-white/10 text-white ring-1 ring-inset ring-white/15"
+  none: "bg-paper-deep text-fg"
 };
 
 function patientName(encounter: EncounterView, state: AppState, profiles: Record<string, ProfileRecord>): string {
@@ -56,10 +57,10 @@ function BoardRow({ encounter, name, now }: { encounter: EncounterView; name: st
       <div className="flex flex-wrap items-start gap-3">
         <TriageChip category={encounter.triage?.category} large />
         <div className="min-w-0 flex-1">
-          <Link href={`/?encounter=${encounter.encounterId}`} className="inline-flex min-h-[32px] items-center gap-1.5 font-display text-lg font-semibold text-white underline-offset-4 hover:underline">
-            {name} <Icon name="arrowRight" className="h-4 w-4 text-white/50" />
+          <Link href={`/?encounter=${encounter.encounterId}`} className="inline-flex min-h-[32px] items-center gap-1.5 font-display text-lg font-semibold text-fg underline-offset-4 hover:underline">
+            {name} <Icon name="arrowRight" className="h-4 w-4 text-fg/50" />
           </Link>
-          <p className="text-sm text-white/65">{encounter.history.symptoms?.text ?? "No chief complaint yet"}</p>
+          <p className="text-sm text-fg/65">{encounter.history.symptoms?.text ?? "No chief complaint yet"}</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {encounter.ambulatory && <Chip tone="emerald">Ambulatory</Chip>}
             {encounter.transport && <Chip tone="sky" icon="truck">{encounter.transport.destination}</Chip>}
@@ -70,7 +71,7 @@ function BoardRow({ encounter, name, now }: { encounter: EncounterView; name: st
         </div>
         <div className="w-full sm:w-72">
           <MovementStepper movement={encounter.movement} />
-          <p className="mt-2 truncate text-xs text-white/55">{last ? vitalsSummary(last.vitals) : "No vitals yet"}</p>
+          <p className="mt-2 truncate text-xs text-fg/55">{last ? vitalsSummary(last.vitals) : "No vitals yet"}</p>
         </div>
         <div className="flex w-full justify-end sm:w-auto">
           {next && next !== "handed-off" && !locked ? (
@@ -125,15 +126,9 @@ export function BoardView() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="page-title">Board</h1>
-          <p className="mt-3 max-w-2xl text-white/70">Incident tracking: who is where, sorted by triage priority.</p>
-        </div>
-        <Button variant="secondary" icon="sparkles" onClick={seedDrill} busy={busy}>
+      <PageIntro index="03" kicker="Incident board" title={<>Who is <span className="mark">where</span>.</>} lede={<>Incident tracking: who is where, sorted by triage priority.</>} action={<Button variant="secondary" icon="sparkles" onClick={seedDrill} busy={busy}>
           Seed MCI drill
-        </Button>
-      </div>
+        </Button>} />
       {notice && (
         <Banner tone={notice.tone} onDismiss={clear}>
           {notice.text}
@@ -142,12 +137,12 @@ export function BoardView() {
 
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
         {(["RED", "YELLOW", "GREEN", "BLACK", "none"] as const).map((key) => (
-          <div key={key} className={cx("flex min-h-[88px] flex-col justify-between rounded-2xl px-4 py-3", COUNTER_STYLE[key])}>
+          <div key={key} className={cx("flex min-h-[88px] flex-col justify-between rounded-card border-[1.5px] border-ink px-4 py-3 shadow-[4px_4px_0_#0f1a2a]", COUNTER_STYLE[key])}>
             <span className="text-xs font-bold uppercase tracking-wider opacity-85">{key === "none" ? "Untriaged" : key}</span>
             <span className="font-display text-3xl font-semibold tabular-nums">{counts[key]}</span>
           </div>
         ))}
-        <div className="flex min-h-[88px] flex-col justify-between rounded-2xl bg-white px-4 py-3 text-ink">
+        <div className="flex min-h-[88px] flex-col justify-between rounded-card border-[1.5px] border-ink bg-paper-card px-4 py-3 text-ink shadow-[4px_4px_0_#d7261e]">
           <span className="text-xs font-bold uppercase tracking-wider opacity-70">Total</span>
           <span className="font-display text-3xl font-semibold tabular-nums">{encounters.length}</span>
         </div>
@@ -166,7 +161,7 @@ export function BoardView() {
               ))}
               <option value="none">No incident</option>
             </SelectField>
-            <label className="inline-flex min-h-[48px] items-center gap-2.5 text-sm text-white/80">
+            <label className="inline-flex min-h-[48px] items-center gap-2.5 text-sm text-fg/80">
               <input type="checkbox" className="h-5 w-5" checked={showClosed} onChange={(e) => setShowClosed(e.target.checked)} />
               Show closed
             </label>
@@ -174,7 +169,7 @@ export function BoardView() {
         }
       >
         {ready && encounters.length === 0 ? (
-          <p className="text-white/65">No patients yet. Start an encounter on Capture, or seed the MCI drill.</p>
+          <p className="text-fg/65">No patients yet. Start an encounter on Capture, or seed the MCI drill.</p>
         ) : (
           <ul className="space-y-3">
             {encounters.map((encounter) => (

@@ -33,14 +33,14 @@ export function OperatorDialog({ open, onClose }: { open: boolean; onClose: () =
       ref={ref}
       onClose={onClose}
       aria-labelledby="operator-title"
-      className="w-[min(92vw,28rem)] rounded-card border border-white/10 bg-navy-900/95 p-0 text-white shadow-2xl backdrop:bg-ink/70 backdrop:backdrop-blur-sm"
+      className="w-[min(92vw,28rem)] rounded-card border border-fg/10 bg-paper p-0 text-fg shadow-2xl backdrop:bg-ink/50 backdrop:backdrop-blur-sm"
     >
       <form onSubmit={submit} className="space-y-4 p-6">
         <div>
           <h2 id="operator-title" className="font-display text-xl font-semibold">
             Who is using this device?
           </h2>
-          <p className="mt-1 text-sm text-white/65">Every write in the event log is stamped with this name, role and unit.</p>
+          <p className="mt-1 text-sm text-fg/65">Every write in the event log is stamped with this name, role and unit.</p>
         </div>
         <TextField label="Name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} autoComplete="name" required />
         <SelectField label="Role" value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value })}>

@@ -26,11 +26,11 @@ export function Card({ title, description, action, children, className, instant,
         <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             {title && (
-              <h2 id={headingId} className="font-display text-xl font-semibold tracking-[-0.01em] text-white">
+              <h2 id={headingId} className="font-display text-2xl font-bold tracking-[-0.03em] text-fg">
                 {title}
               </h2>
             )}
-            {description && <p className="mt-1 max-w-prose text-sm text-white/65">{description}</p>}
+            {description && <p className="mt-1 max-w-prose text-sm text-fg/65">{description}</p>}
           </div>
           {action}
         </header>

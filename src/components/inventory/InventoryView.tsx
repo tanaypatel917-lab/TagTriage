@@ -13,6 +13,7 @@ import { useAppState } from "../providers/AppDataProvider";
 import { useWriter } from "../providers/OperatorProvider";
 import { DemoStickersButton } from "./DemoStickersButton";
 import { RollCard } from "./RollCard";
+import { PageIntro } from "../ui/PageIntro";
 
 type Notice = { tone: "success" | "error"; text: string } | null;
 
@@ -64,13 +65,7 @@ export function InventoryView() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="page-title">Inventory</h1>
-          <p className="mt-3 max-w-2xl text-white/70">Sticker rolls per unit. Recalled batches are blocked everywhere, and low stock or expiring adhesive is flagged.</p>
-        </div>
-        <DemoStickersButton />
-      </div>
+      <PageIntro index="04" kicker="Inventory" title={<>Stock the <span className="mark">rolls</span>.</>} lede={<>Sticker rolls per unit. Recalled batches are blocked everywhere, and low stock or expiring adhesive is flagged.</>} action={<DemoStickersButton />} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-8">
@@ -79,7 +74,7 @@ export function InventoryView() {
           )}
           {units.map((unit) => (
             <section key={unit} aria-labelledby={`unit-${unit}`}>
-              <h2 id={`unit-${unit}`} className="mb-3 font-display text-lg font-semibold text-white/85">
+              <h2 id={`unit-${unit}`} className="mb-3 font-display text-lg font-semibold text-fg/85">
                 {unit}
               </h2>
               <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">

@@ -17,6 +17,7 @@ import { SummaryView } from "../register/SummaryView";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { Icon } from "../ui/Icon";
 import { useAppState } from "../providers/AppDataProvider";
 import { useWriter } from "../providers/OperatorProvider";
 import { useReader } from "../providers/ReaderProvider";
@@ -24,6 +25,7 @@ import { EncounterTimeline } from "./EncounterTimeline";
 import { CloseSection, CustodySection, HistorySection, InterventionsSection, TransportSection, TriageSection, VitalsSection } from "./EncounterSections";
 import { MedProfileCard } from "./MedProfileCard";
 import { ReaderPanel } from "./ReaderPanel";
+import { PageIntro } from "../ui/PageIntro";
 
 function focusEncounterFor(tag: TagView | undefined): string | undefined {
   if (!tag) return undefined;
@@ -154,10 +156,7 @@ export function CaptureView() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="page-title">Capture</h1>
-        <p className="mt-3 max-w-2xl text-white/70">Tap a sticker to see the patient&apos;s critical facts instantly, then run the encounter. Every entry is timestamped and signed with your operator name.</p>
-      </div>
+      <PageIntro index="01" kicker="Capture" title={<>Tap. Read. <span className="mark">Treat.</span></>} lede={<>Tap a sticker to see the patient&apos;s critical facts instantly, then run the encounter. Every entry is timestamped and signed with your operator name.</>} />
       <p className="sr-only" aria-live="assertive">
         {announcement}
       </p>
@@ -175,7 +174,7 @@ export function CaptureView() {
 
         <div ref={panelRef} className="min-w-0 scroll-mt-28 space-y-6">
           {!cls && (
-            <Card title="Waiting for a tap" description="The MED PROFILE appears here the moment a sticker is read. Personal stickers show on-tag facts even on devices that never synced." />
+            <WaitingForTap />
           )}
 
           {cls?.kind === "invalid" && <Banner tone="error" title="Sticker unreadable">{cls.reason} Use a new sticker.</Banner>}
@@ -198,7 +197,7 @@ export function CaptureView() {
               <h2 ref={onTagFacts ? undefined : headingRef} tabIndex={-1} className="sr-only">
                 Sticker details
               </h2>
-              <p className="text-white/75">
+              <p className="text-fg/75">
                 {cls.kind === "blank"
                   ? "This sticker has no ID yet. Starting an encounter writes its opaque ID first. No patient data is written to it."
                   : cls.kind === "foreign"
@@ -250,5 +249,38 @@ export function CaptureView() {
         </div>
       </div>
     </div>
+  );
+}
+
+function WaitingForTap() {
+  return (
+    <section aria-labelledby="waiting-title" className="glass-card overflow-hidden p-0">
+      <div className="grid items-center gap-6 p-6 sm:grid-cols-[minmax(0,1fr)_13rem] sm:p-8">
+        <div>
+          <p className="kicker">Reader idle</p>
+          <h2 id="waiting-title" className="mt-3 font-display text-4xl font-extrabold leading-[0.95] tracking-[-0.04em] sm:text-5xl">
+            Waiting for a <span className="mark--signal">tap</span>.
+          </h2>
+          <p className="mt-4 max-w-md text-fg/70">The MED PROFILE appears here the moment a sticker is read. Personal stickers show on-tag facts even on devices that never synced.</p>
+          <ol className="mt-6 grid gap-2 font-mono text-[12px] uppercase tracking-[0.12em] text-fg/70 sm:grid-cols-3">
+            {["Allergies", "Code status", "Blood thinners"].map((item, index) => (
+              <li key={item} className="flex items-center gap-2 border-t-[1.5px] border-ink pt-2">
+                <span className="text-signal">{String(index + 1).padStart(2, "0")}</span>
+                {item}
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div className="relative mx-auto grid aspect-square w-44 place-items-center sm:w-full" aria-hidden="true">
+          {[0, 900, 1800].map((delay) => (
+            <span key={delay} className="tap-ripple" style={{ ["--delay" as string]: `${delay}ms` }} />
+          ))}
+          <div className="relative grid h-24 w-24 rotate-[-8deg] place-items-center rounded-[20px] border-[1.5px] border-ink bg-signal text-white shadow-[5px_5px_0_#0f1a2a]">
+            <Icon name="nfc" className="h-11 w-11" strokeWidth={2} />
+          </div>
+        </div>
+      </div>
+      <div className="battenburg battenburg--thin border-t-[1.5px] border-ink" />
+    </section>
   );
 }
