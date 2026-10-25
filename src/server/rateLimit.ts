@@ -1,32 +1,75 @@
+export type RateLimitResult = { ok: true } | { ok: false; retryAfterSec: number };
+
 export interface RateLimiter {
-  check(key: string): { ok: true } | { ok: false; retryAfterSec: number };
+  peek(key: string): RateLimitResult;
+  record(key: string): void;
+  check(key: string): RateLimitResult;
+  size(): number;
 }
 
 export function createRateLimiter(opts: { limit: number; windowMs: number; now?: () => number }): RateLimiter {
   const now = opts.now ?? Date.now;
   const timestampsByKey = new Map<string, number[]>();
+  const sweepIntervalMs = Math.min(opts.windowMs, 60_000);
+  let lastSweepAt = Number.NEGATIVE_INFINITY;
+
+  function pruneKeyAt(key: string, currentTime: number): number[] {
+    const timestamps = timestampsByKey.get(key);
+    if (!timestamps) return [];
+    const activeTimestamps = timestamps.filter((timestamp) => currentTime - timestamp <= opts.windowMs);
+    if (activeTimestamps.length === 0) timestampsByKey.delete(key);
+    else if (activeTimestamps.length !== timestamps.length) timestampsByKey.set(key, activeTimestamps);
+    return activeTimestamps;
+  }
+
+  function peekAt(key: string, currentTime: number): RateLimitResult {
+    const activeTimestamps = pruneKeyAt(key, currentTime);
+    if (activeTimestamps.length >= opts.limit) {
+      const oldest = activeTimestamps[0];
+      const retryAfterSec = Math.max(1, Math.ceil((oldest + opts.windowMs - currentTime) / 1000));
+      return { ok: false, retryAfterSec };
+    }
+
+    return { ok: true };
+  }
+
+  function recordAt(key: string, currentTime: number) {
+    if (currentTime - lastSweepAt >= sweepIntervalMs) {
+      lastSweepAt = currentTime;
+      for (const storedKey of timestampsByKey.keys()) pruneKeyAt(storedKey, currentTime);
+    }
+    const timestamps = timestampsByKey.get(key) ?? [];
+    timestamps.push(currentTime);
+    timestampsByKey.set(key, timestamps);
+  }
 
   return {
+    peek(key) {
+      return peekAt(key, now());
+    },
+    record(key) {
+      recordAt(key, now());
+    },
     check(key) {
       const currentTime = now();
-      for (const [storedKey, timestamps] of timestampsByKey) {
-        const activeTimestamps = timestamps.filter((timestamp) => currentTime - timestamp <= opts.windowMs);
-        if (activeTimestamps.length === 0) timestampsByKey.delete(storedKey);
-        else timestampsByKey.set(storedKey, activeTimestamps);
-      }
-      const activeTimestamps = timestampsByKey.get(key) ?? [];
-
-      if (activeTimestamps.length >= opts.limit) {
-        const oldest = activeTimestamps[0];
-        const retryAfterSec = Math.max(1, Math.ceil((oldest + opts.windowMs - currentTime) / 1000));
-        return { ok: false, retryAfterSec };
-      }
-
-      activeTimestamps.push(currentTime);
-      timestampsByKey.set(key, activeTimestamps);
-      return { ok: true };
+      const result = peekAt(key, currentTime);
+      if (result.ok) recordAt(key, currentTime);
+      return result;
+    },
+    size() {
+      return timestampsByKey.size;
     }
   };
+}
+
+export function consumeAll(entries: ReadonlyArray<readonly [RateLimiter, string]>): RateLimitResult {
+  const results = entries.map(([limiter, key]) => limiter.peek(key));
+  const failures = results.filter((result): result is Extract<RateLimitResult, { ok: false }> => !result.ok);
+  if (failures.length > 0) {
+    return { ok: false, retryAfterSec: Math.max(...failures.map((failure) => failure.retryAfterSec)) };
+  }
+  for (const [limiter, key] of entries) limiter.record(key);
+  return { ok: true };
 }
 
 export function clientKeyOf(headers: Headers): string {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { clientKeyOf, createRateLimiter, rateLimitsFromProcess } from "./rateLimit";
+import { clientKeyOf, consumeAll, createRateLimiter, rateLimitsFromProcess } from "./rateLimit";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -32,6 +32,60 @@ describe("createRateLimiter", () => {
     expect(limiter.check("first")).toEqual({ ok: true });
     expect(limiter.check("second")).toEqual({ ok: true });
     expect(limiter.check("first")).toEqual({ ok: false, retryAfterSec: 1 });
+  });
+
+  it("peeks without recording", () => {
+    const limiter = createRateLimiter({ limit: 1, windowMs: 1_000, now: () => 0 });
+
+    expect(limiter.peek("client")).toEqual({ ok: true });
+    expect(limiter.size()).toBe(0);
+  });
+
+  it("sweeps expired keys on a later record", () => {
+    let currentTime = 0;
+    const limiter = createRateLimiter({ limit: 2, windowMs: 1_000, now: () => currentTime });
+
+    limiter.record("expired");
+    expect(limiter.size()).toBe(1);
+    currentTime = 2_000;
+    limiter.record("new");
+
+    expect(limiter.size()).toBe(1);
+  });
+});
+
+describe("consumeAll", () => {
+  it("does not record the client when the global limiter is full", () => {
+    const client = createRateLimiter({ limit: 1, windowMs: 1_000, now: () => 0 });
+    const global = createRateLimiter({ limit: 1, windowMs: 1_000, now: () => 0 });
+    global.check("global");
+
+    expect(consumeAll([[client, "client"], [global, "global"]])).toEqual({ ok: false, retryAfterSec: 1 });
+    expect(client.size()).toBe(0);
+  });
+
+  it("does not record the global limiter when the client limiter is full", () => {
+    const client = createRateLimiter({ limit: 2, windowMs: 1_000, now: () => 0 });
+    const global = createRateLimiter({ limit: 5, windowMs: 1_000, now: () => 0 });
+    client.check("client");
+    client.check("client");
+
+    expect(consumeAll([[client, "client"], [global, "global"]])).toEqual({ ok: false, retryAfterSec: 1 });
+    expect(global.peek("global")).toEqual({ ok: true });
+    expect(global.size()).toBe(0);
+  });
+
+  it("returns the maximum retry time across refusing limiters", () => {
+    let clientTime = 9_000;
+    let globalTime = 0;
+    const client = createRateLimiter({ limit: 1, windowMs: 9_000, now: () => clientTime });
+    const global = createRateLimiter({ limit: 1, windowMs: 15_000, now: () => globalTime });
+    client.record("client");
+    global.record("global");
+    clientTime = 10_000;
+    globalTime = 10_000;
+
+    expect(consumeAll([[client, "client"], [global, "global"]])).toEqual({ ok: false, retryAfterSec: 8 });
   });
 });
 
