@@ -2,10 +2,13 @@ import { expect, test, type Page } from "@playwright/test";
 import { SAMPLE_PATIENT } from "../src/domain/samples";
 
 async function loadDemoRoll(page: Page) {
-  await page.getByRole("button", { name: "Load demo stickers" }).click();
+  const loadButton = page.getByRole("button", { name: "Load demo stickers" });
+  await loadButton.click();
+  await expect(loadButton).toBeHidden();
   const rollSelect = page.getByLabel("Sticker roll");
   await expect(rollSelect).toBeVisible();
   const option = rollSelect.locator("option").filter({ hasText: "LOT-A24-117" });
+  await expect(rollSelect).toContainText("Medic 12 · LOT-A24-117");
   const value = await option.getAttribute("value");
   if (!value) throw new Error("The Medic 12 demo roll was not available.");
   await rollSelect.selectOption(value);

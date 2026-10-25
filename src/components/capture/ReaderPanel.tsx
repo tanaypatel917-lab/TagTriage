@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { decodeFactsPayload } from "@/domain/facts";
 import { rollTags } from "@/domain/inventory";
 import type { TagView } from "@/domain/state";
-import { cx } from "@/lib/format";
 import type { TagRead } from "@/readers/types";
 import { DemoStickersButton } from "../inventory/DemoStickersButton";
 import { Card } from "../ui/Card";
@@ -48,7 +47,10 @@ export function ReaderPanel({ onRead, onScanError }: { onRead: (read: TagRead) =
   const [scanning, setScanning] = useState(false);
   const stopNfc = useRef<(() => void) | null>(null);
   const onReadRef = useRef(onRead);
-  onReadRef.current = onRead;
+
+  useEffect(() => {
+    onReadRef.current = onRead;
+  }, [onRead]);
 
   useEffect(() => simulator.subscribe((read) => onReadRef.current(read)), [simulator]);
 
