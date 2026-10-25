@@ -2,6 +2,8 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
+  // Component variants are composed at runtime (e.g. `btn-${variant}`), so keep them out of purging.
+  safelist: [{ pattern: /^(btn-(primary|secondary|ghost|danger|sm)|chip-(sky|red|emerald|amber|neutral)|triage-(RED|YELLOW|GREEN|BLACK))$/ }],
   theme: {
     extend: {
       colors: {
@@ -21,24 +23,8 @@ const config: Config = {
         "out-expo": "cubic-bezier(0.23, 1, 0.32, 1)",
         drawer: "cubic-bezier(0.32, 0.72, 0, 1)"
       },
-      keyframes: {
-        "rise-in": {
-          from: { opacity: "0", transform: "translateY(10px) scale(0.99)" },
-          to: { opacity: "1", transform: "none" }
-        },
-        "aurora-drift": {
-          "0%": { transform: "translate3d(-4%, -2%, 0) scale(1)" },
-          "100%": { transform: "translate3d(4%, 2%, 0) scale(1.08)" }
-        },
-        "pulse-ring": {
-          "0%": { transform: "scale(1)", opacity: "0.55" },
-          "80%, 100%": { transform: "scale(1.14)", opacity: "0" }
-        }
-      },
       animation: {
-        "rise-in": "rise-in 420ms cubic-bezier(0.23, 1, 0.32, 1) both",
-        "aurora-drift": "aurora-drift 22s ease-in-out infinite alternate",
-        "pulse-ring": "pulse-ring 2.4s cubic-bezier(0.23, 1, 0.32, 1) infinite"
+        "fade-in": "fade-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both"
       }
     }
   },

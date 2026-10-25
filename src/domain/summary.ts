@@ -44,20 +44,27 @@ export interface EmsSummary {
   headline: string;
   alerts: EmsAlert[];
   facts: MergedFacts;
+  extracted: ExtractedFacts | null;
   rewriter: RewriterInfo;
   pendingConfirmations: "dnr"[];
   generatedAt: string;
   transcript?: string;
 }
 
+/** Dedupes case-insensitively, treating "Penicillin (hives)" and "penicillin" as one item and keeping the more detailed text. */
 function unionCaseInsensitive(primary: readonly string[], secondary: readonly string[]): string[] {
-  const seen = new Set<string>();
+  const index = new Map<string, number>();
   const out: string[] = [];
-  for (const item of [...primary, ...secondary]) {
-    const key = item.trim().toLowerCase();
-    if (key && !seen.has(key)) {
-      seen.add(key);
-      out.push(item.trim());
+  for (const raw of [...primary, ...secondary]) {
+    const item = raw.trim();
+    const key = item.toLowerCase().replace(/\s*\([^)]*\)/g, "").trim();
+    if (!key) continue;
+    const existing = index.get(key);
+    if (existing === undefined) {
+      index.set(key, out.length);
+      out.push(item);
+    } else if (item.length > out[existing].length) {
+      out[existing] = item;
     }
   }
   return out;
@@ -198,6 +205,7 @@ export function buildSummary(
     headline: headlineFor(facts, now),
     alerts: rankAlerts(facts, manual, extracted),
     facts,
+    extracted,
     rewriter,
     pendingConfirmations: facts.recordSuggestsDnr ? ["dnr"] : [],
     generatedAt: now.toISOString(),

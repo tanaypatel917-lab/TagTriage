@@ -17,7 +17,8 @@ export interface AppData {
 
 const NO_EVENTS: AppEvent[] = [];
 
-export function useAppState(): AppData {
+/** Live event log plus its projection. Mount once (AppDataProvider) and read it through context. */
+export function useLiveAppData(): AppData {
   const events = useLiveQuery(() => getDb().events.toArray(), []);
   const state = useMemo(() => project(events ?? NO_EVENTS), [events]);
   return { ready: events !== undefined, events: events ?? NO_EVENTS, state };
