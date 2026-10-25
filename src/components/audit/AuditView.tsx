@@ -17,7 +17,7 @@ import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { Chip } from "../ui/Chip";
 import { SelectField, TextField } from "../ui/Field";
-import { useAppState } from "../providers/AppDataProvider";
+import { useAppState, useStoragePersistence } from "../providers/AppDataProvider";
 import { useOperator } from "../providers/OperatorProvider";
 import { PageIntro } from "../ui/PageIntro";
 
@@ -49,6 +49,7 @@ function ConflictList({ conflicts }: { conflicts: Conflict[] }) {
 
 export function AuditView() {
   const { state, events } = useAppState();
+  const storagePersistence = useStoragePersistence();
   const profiles = useProfiles();
   const deviceId = useDeviceId();
   const { actor } = useOperator();
@@ -140,6 +141,18 @@ export function AuditView() {
               <dt className="text-fg/55">Stored</dt>
               <dd className="text-fg/90">
                 {plural(events.length, "event")} · {plural(Object.keys(profiles).length, "profile")}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-fg/55">Storage</dt>
+              <dd className="text-fg/90">
+                {storagePersistence === null
+                  ? "…"
+                  : storagePersistence === "persisted"
+                    ? "Persistent"
+                    : storagePersistence === "best-effort"
+                      ? "Best effort: the browser may clear it when space runs low. Export regularly."
+                      : "Not supported by this browser. Export regularly."}
               </dd>
             </div>
           </dl>
